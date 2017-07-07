@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script type="text/javascript">
+		一。函数的自执行
+		(function(){
+
+		})();
+		// 1.好处：避免产生全局的变量，不会污染全局
+		// 2.一般会传入window：
+			(function(window){
+
+			})(window);
+		// 	好处：1、如果不传的话，在function内部也是可以访问window,到是会慢，因为根据作用域链，wi			   ndow的属性和方法是最后才会访问的
+		// 	      2.如果不传的话，function内的window说是不会被压缩的，因为一旦被压缩就不会识别了，			  但是如果参入参数window就可以被压缩了。		
+					// 例如下面的
+					(function(w){
+						w....
+					})(window);
+		// 3.传入undefined
+			// undefined是window的一个属性，不是保留字和关键字，在一些浏览器比如IE7，8,可以给undefined赋值，使得undefined的意义发生变化，所以jq为了防止undefined的意义发生变化，所以传入了这个参数
+			(function(window,undefined){
+
+			})(window);
+
+		二。变量
+			1.rootjQuery
+			它其实就是jQuery(document),在866行可以清楚的看到。
+			好处：1.赋值给rootjQuery可以压缩，而jQuery(document)是无法压缩的。
+				  2.可以让我们了解是干么的
+				  如：var speeds = oldSpeed + 10;
+				  我们不知道10是撒；
+				  但是如果我们这样写：
+				  var speed = 10;
+				  var speeds = oldSpeed + speed;我们就知道10原来是加速度。
+
+			2.readyList
+			表示DOM加载完成
+
+			3.core_strundefined = typeof undefined,
+			typeof 用来判断数据的类型，返回字符串;
+			我们一般判断是否undefined是下面2种方法：
+				if(a == undefined)或者 if(typeof a == "undefined");
+				但是a == undefined在IE9及以下判断XML的时候是不充分的，需要用后一种判断
+
+			4.location = window.location,
+			  document = window.document,
+		      docElem = document.documentElement,
+		      其实不存储window.location等也是可以直接用的，只不过存储过后会更加的方便，比如：
+		      var i = document.getElementById("asdasd");
+		      只有i就可以了 
+
+		    5.
+	</script>
+</body>
+</html>
