@@ -29,32 +29,112 @@
 
 		二。变量
 			1.rootjQuery
-			它其实就是jQuery(document),在866行可以清楚的看到。
-			好处：1.赋值给rootjQuery可以压缩，而jQuery(document)是无法压缩的。
-				  2.可以让我们了解是干么的
-				  如：var speeds = oldSpeed + 10;
-				  我们不知道10是撒；
-				  但是如果我们这样写：
-				  var speed = 10;
-				  var speeds = oldSpeed + speed;我们就知道10原来是加速度。
+			// 它其实就是jQuery(document),在866行可以清楚的看到。
+			// 好处：1.赋值给rootjQuery可以压缩，而jQuery(document)是无法压缩的。
+			// 	  2.可以让我们了解是干么的
+			// 	  如：var speeds = oldSpeed + 10;
+			// 	  我们不知道10是撒；
+			// 	  但是如果我们这样写：
+			// 	  var speed = 10;
+			// 	  var speeds = oldSpeed + speed;我们就知道10原来是加速度。
 
 			2.readyList
-			表示DOM加载完成
+			// 表示DOM加载完成
 
 			3.core_strundefined = typeof undefined,
-			typeof 用来判断数据的类型，返回字符串;
-			我们一般判断是否undefined是下面2种方法：
-				if(a == undefined)或者 if(typeof a == "undefined");
-				但是a == undefined在IE9及以下判断XML的时候是不充分的，需要用后一种判断
+			// typeof 用来判断数据的类型，返回字符串;
+			// 我们一般判断是否undefined是下面2种方法：
+			// 	if(a == undefined)或者 if(typeof a == "undefined");
+			// 	但是a == undefined在IE9及以下判断XML的时候是不充分的，需要用后一种判断
 
 			4.location = window.location,
 			  document = window.document,
 		      docElem = document.documentElement,
-		      其实不存储window.location等也是可以直接用的，只不过存储过后会更加的方便，比如：
-		      var i = document.getElementById("asdasd");
-		      只有i就可以了 
+		      // 其实不存储window.location等也是可以直接用的，只不过存储过后会更加的方便，比如：
+		      // var i = document.getElementById("asdasd");
+		      // 只有i就可以了 
 
-		    5.
+		    5._jQuery = window.jQuery,
+		      _$ = window.$,
+		      // 这样做有利于避免冲突，例如
+		      // var $ = 10;
+		      // jQuery.js中就会将_$ = window.$,这样就可以尽量避免冲突了。如果没有定义的话_$=undefined
+
+		    6.class2type = {},
+		      // 主要用来进行类型的判断用的，$.type()
+		      // class2type一般的存储格式为class2type={'[Object Array]':"array"}
+
+		    7.core_deletedIds = [],
+		      // 1.x版本用于数据缓存和删除，2.0以后只代表空数组
+
+		    8.core_version = "2.0.3",
+		      // 此jq的版本号
+
+		    7.core_concat = core_deletedIds.concat,
+			  core_push = core_deletedIds.push,
+			  core_slice = core_deletedIds.slice,
+			  core_indexOf = core_deletedIds.indexOf,
+			  core_toString = class2type.toString,
+			  core_hasOwn = class2type.hasOwnProperty,
+			  core_trim = core_version.trim,
+			  // 对数组方法，字符串或者对象下面的一些常用的方法的局部变量的存储。
+
+			8.(61行)jQuery = function( selector, context ) {
+				return new jQuery.fn.init( selector, context, rootjQuery );
+			  },
+			  (96行)jQuery.fn = jQuery.prototype = {}
+			  (283行)jQuery.fn.init.prototype = jQuery.fn;
+			  61行定义了jQuery方法，jQuery其实就是$;
+			  我们可以看到反回了一个对象，这样我们才能用jQuery().attr()等这样的对象形式的方法。
+			  96行我们可以看到其实fn就是prototype;
+			  一般的构造函数：
+			  	function jQuery = function(){};
+			  	jQuery.prototype.init = function(){};//（init初始化函数,只有初始化后实例才能用）
+			  	jQuery.prototype.css = function(){};
+			  	var a1 = new jQuery();
+			  	a1.init();//初始化一下
+			  	a1.css();//调用方法
+			  jQuery中的写法:
+			  	function jQuery = function(){
+			  		return new jQuery.fn.init();
+			  	};
+			  	jQuery.prototype.init = function(){};//（init初始化函数,只有初始化后实例才能用）
+			  	jQuery.prototype.css = function(){};
+			  	jQuery.prototype.init.prototype = jQuery.prototype;//(利用96和283行)
+			  	jQuery().css();//调用方法
+
+			9.core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source,
+			 // 是匹对数字的正则表达式
+
+			10.core_rnotwhite = /\S+/g,
+			// 是匹配单词的正则
+
+			11.rquickExpr = /^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,
+			// 匹配一个标签或#id；为了防止XSS，是不会在hash中识别标签的
+			// 例如下面的
+			//  <p>asdasdasd        #div
+
+			12.rsingleTag = /^<(\w+)\s*\/?>(?:<\/\1>|)$/,
+			// 匹配一个空标签
+			// <p></p>  <div></div>
+
+			13.rmsPrefix = /^-ms-/,
+			   rdashAlpha = /-([\da-z])/gi,
+			   // js中对margin-left会转化为marginLeft，-2d->>2d;
+			   // 对于带有浏览器表示的如-webkit-margin-left会转化为webkitMarginLeft
+			   // 但是对于IE浏览器的转换时，会有所不同:-ms-margin-left ->>>MsMarginLeft(开头也大写)
+
+			14.fcamelCase = function( all, letter ) {
+					return letter.toUpperCase();
+				},
+				// 转驼峰的回调函数
+
+			15.completed = function() {
+					document.removeEventListener( "DOMContentLoaded", completed, false );
+					window.removeEventListener( "load", completed, false );
+					jQuery.ready();
+				};
+				// dom加载成功之后的回调函数
 	</script>
 </body>
 </html>

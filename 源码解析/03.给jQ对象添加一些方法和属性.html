@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+<script type="text/javascript">
+		// (96  , 283)
+	jQuery.fn = jQuery.prototype ={//添加实例属性和方法
+		1.jquery:core_version
+			// 版本,来自于上面定义的变量core_version，可以用jQuery().jquery获取  
+
+		2.constructor: jQuery,
+			// 对constructor指向的修正
+			// 一般情况下：
+			// 	function Person(){}
+			// var a= new Person();
+			// console.log(a.constructor)   //Person构造函数
+			// console.log(Person.prototype.constructor)//Person构造函数   原型也是对象，会自动生成一个constructor属性执行构造函数
+			// Person.prototype.name = "hcd";
+			// Person.prototype.saya = function(){
+			// 	console.log(this.name);
+			// }
+			// console.log(Person.prototype.constructor)//Person构造函数
+			// // 因为Person.prototype其实也是对象，叫原型对象，所以可以用下面的方法
+			// Person.prototype = {
+			// 	name:"hcd",
+			// 	saya:function(){
+			// 		console.log(this.name)
+			// 	}
+			// }
+			// console.log(Person.prototype.constructor)//不再指向Person构造函数
+			// 这是因为Person.prototype.name = "hcd";这样的方法是向原型对象中添加属性和方法；
+			// 而Person.prototype={}是对原型对象的覆盖;切断了她和构造函数的关系;我们可以Person.prototype={constructor:Person}这样讲原型对象和构造函数联系起来
+
+		3.init函数(101行)
+		// 初始化和参数管理
+		// 参数例如下面的
+		// $("li","ul"),selector为li表示所有的li,context为ul表示上下文的环境，表示ul下面的li
+		// (105行)表示当输入的selector为null,undefined等无法在DOM中找到时,就会return.
+		// (110行)表示表示当输入为String时，例如$("li"),$("<div>asd</div>"),$("#div")等时运行
+		// (177行)selector为直接对元素进行处理,例如$(this),$(document)
+		// (184行)selector为函数时,例如$(function(){})
+		// (193行)selector为数组时
+
+		// 接下来对init进行详细的解释：
+		// 首先要了解的：
+				// $("li").css("background","red");
+				// 他其实和js中的下面的方法原理是一样的：
+				// var lia = document.getELementByTagName("li");
+				// for(var i=0;i<lia.length;i++){
+				// 	lia[i].style.background = "red";
+			 // 	}
+			 // 	但是又有所不同(因为对象中的变量都是局部变量，所以无法访问)：
+				// function jQuery(){}
+				// jQuery.prototype.select = function(){
+				// 	var lia = document.getELementByTagName("li");
+				// } 
+				// jQuery.prototype.css = function(){
+				// 	for(var i=0;i<lia.length;i++){
+				// 		lia[i].style.background = "red";
+				// 	}
+				// }	
+				// var jq = new jQuery();
+				// jq.select();
+				// jq.css();//lia is undefined
+
+				// 而构造函数中共同的是this,因为我们无法模拟真正的jq环境，所以用this.lia代替了this;
+				// function jQuery(){}
+				// jQuery.prototype.select = function(){
+				// 	this.lia = $("li").css("background","red");
+				// 	// 其实在jq中，this的存储为(存储的为原生的)
+				// 	// this={
+				// 	// 	0:'li',
+				// 	// 	1:'l1',
+				// 	// 	2:'li',
+				// 	// 	length:3
+				// 	// }
+				// } 
+				// jQuery.prototype.css = function(){
+				// 	for(var i=0;i<this.lia.length;i++){
+				// 		// 因为this存储的为原生的，所以用原生的js方法
+				// 		this.lia[i].style.background = "red";
+				// 	}
+				// }	
+				// var jq = new jQuery();
+				// jq.select();
+				// jq.css();
+
+		// 详解：
+		(110行)如果是字符串	
+			(111行)	if(selector.charAt(0) === "<" && selector.charAt( selector.length - 1 ) === ">" && selector.length >= 3 ){
+					// 表示以"<"开头以'>'结尾，并且长度大于等于3，其实就是在找标签
+					// 比如这样的$("<div>span</div><div>hcd</div>"),$("<li>")
+
+					match = [ null, selector, null ];
+					//如果满足条件的进行如上设置，例如：
+					// match = [ null, "<div>span</div><div>hcd</div>", null ];
+					// match = [ null, "<li>", null ];
+				}else{
+					// 比如：$("li"),$("#div"),$(".div span"),$("#div ul")
+					// 特别的有这种$("<div>hcd")(这样的以创建div但是是显示不出hcd的，也就是说创建的是没有内容的div)
+
+					match = rquickExpr.exec( selector );
+					//走else的将会进行如上的设置
+					// rquickExpr(75行)为在jq初始定义的正则表达式，表示删选含有单标签或者id的元素
+					// exec为正则的方法
+					// 例如：
+					// match = null;//$("li"),$(".div span"),$("#div ul")
+					// match = [ "#div",null,"div"];//$("#div")
+					// match = [ "<div>hcd","<div>",null];//$("<div>hcd"),这也是为何$("<div>hcd")会产生一个空的div，因为[]中间只有标签
+				}
+
+			(120行)if ( match && (match[1] || !context) ){
+				//match不为null,并且,match数组第二个不是null,或者不含有上下文(#div这样的取ID的一般都是不会含有上下文的)
+				// 能进入的是标签$("li")和$("#div")这样的
+				 (123行)if ( match[1] ) {
+							// 如果match数组第二个元素不是null，其实也就是标签$("li")
+						}else{
+							//进的是$("#div")id这样的形式
+						}
+				}
+
+		
+
+
+
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
