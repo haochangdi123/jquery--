@@ -39,7 +39,7 @@
 		// 参数例如下面的
 		// $("li","ul"),selector为li表示所有的li,context为ul表示上下文的环境，表示ul下面的li
 		// (105行)表示当输入的selector为null,undefined等无法在DOM中找到时,就会return.
-		// (110行)表示表示当输入为String时，例如$("li"),$("<div>asd</div>"),$("#div")等时运行
+		// (110行)表示表示当输入为String时，例如$("li"),创建标签$("<div>asd</div>"),$("#div")等时运行
 		// (177行)selector为直接对元素进行处理,例如$(this),$(document)
 		// (184行)selector为函数时,例如$(function(){})
 		// (193行)selector为数组时
@@ -92,7 +92,7 @@
 		(110行)如果是字符串	
 			(111行)	if(selector.charAt(0) === "<" && selector.charAt( selector.length - 1 ) === ">" && selector.length >= 3 ){
 					// 表示以"<"开头以'>'结尾，并且长度大于等于3，其实就是在找标签
-					// 比如这样的$("<div>span</div><div>hcd</div>"),$("<li>")
+					// 比如这样的创建标签$("<div>span</div><div>hcd</div>"),$("<li>")
 
 					match = [ null, selector, null ];
 					//如果满足条件的进行如上设置，例如：
@@ -100,7 +100,7 @@
 					// match = [ null, "<li>", null ];
 				}else{
 					// 比如：$("li"),$("#div"),$(".div span"),$("#div ul")
-					// 特别的有这种$("<div>hcd")(这样的以创建div但是是显示不出hcd的，也就是说创建的是没有内容的div)
+					// 特别的有这种创建标签$("<div>hcd")(这样的以创建div但是是显示不出hcd的，也就是说创建的是没有内容的div)
 
 					match = rquickExpr.exec( selector );
 					//走else的将会进行如上的设置
@@ -114,9 +114,78 @@
 
 			(120行)if ( match && (match[1] || !context) ){
 				//match不为null,并且,match数组第二个不是null,或者不含有上下文(#div这样的取ID的一般都是不会含有上下文的)
-				// 能进入的是标签$("li")和$("#div")这样的
+				// 能进入的是创建标签$("<li>")和$("#div")这样的
 				 (123行)if ( match[1] ) {
-							// 如果match数组第二个元素不是null，其实也就是标签$("li")
+							// 如果match数组第二个元素不是null，其实也就是创建标签$("<li>")
+
+							(124行)context = context instanceof jQuery ? context[0] : context;
+								// 创建标签的时候可以传第二个参数，表示上下文的环境;(h很少用)如果为document直接取，但是如果是$(document)这样的用context[0]转化为原生的。
+								// 例如：$("<li>",document)但是注意，只能传document不能传ul等这样的，一般用于页面上有iframe的时候，那页面上就会有两个window;
+								//     $("<li>",contentWindow.document)来创建iframe的document下的li
+
+							(127行)jQuery.merge( this, jQuery.parseHTML(
+									match[1],
+									context && context.nodeType ? context.ownerDocument || context : document,
+									true
+								   ));
+								// 1.$("ul").appen($("<li>1</li><li>2</li><li>3</li>"))
+									// 我们由首先要了解到的找到，其实他要变成
+									// this={
+									// 	0:'li',
+									// 	1:'l1',
+									// 	2:'li',
+									// 	length:3
+									// }
+									// 这样的形式后再用原生js的方法遍历插入到ul中
+								// 2.jQuery.parseHTML()方法的简介：参数1：string，2：上下执行环境，3.是否识别script标签(默认为false)
+									// 例如：
+									// 	var string = "<li>1</li><li>2</li><li>3</li><script>alert(2)<\/script>"
+									// 	(注意为了防止script的错误识别,使用了转译的/);
+									// 	var arr = jQuery.parseHTML(string,document,true);
+									// 	//['li','li','li']每一个元素为数组的元素
+									// 	$.each(arr,function(i){
+									// 		$("ul").append(a[i]);
+									// 	})
+									// 	//这样ul上就会多3个li了，并且会弹4.
+								// 3.jQuery.merge方法
+									//  	合并数组
+									//   例如：var a1 = ['a'];
+									//   		var a2 = ['b'];
+									//   		var b = jQuery.merge(a1,a2)//['a','b']
+									//    但是在jq的内部总着合并数组和json的特殊作用：
+									//    例如：var c1={
+									//    			  0:'a',
+									//    			  1:'b',
+									//    			  length:2
+									//    			}
+									//    		 var c2 = ['c'];
+									//    		 var d = jQuery.merge(c1,c2);
+									//    		 //结果为d={
+									//    		 	   0:'a',
+									//    			   1:'b',
+									//    			   2:'c',
+									//    			  length:3
+									//    		 }
+								// 所以利用jQuery.parseHTML和jQuery.merge我们可以的到我们想要的this的json形式
+
+							(134行)if ( rsingleTag.test( match[1] ) && jQuery.isPlainObject( context ) ) {
+									// 1.rsingleTag为筛选单标签的正则,test为正则的删选方法.
+									// 例如:<li>或者<li></li>就是说不能有内容
+									// 2.jQuery.isPlainObject( context )是说为json的形式
+									// 例如:
+									// $("<li></li>",{title:'hi',html:'asdads'}).appendTo('ul'); 
+									(135行)for ( match in context ) {
+										// for-in循环遍历传入参数json的属性(json的属性只能用for-in遍历)
+									if ( jQuery.isFunction( this[ match ] ) ) {
+										this[ match ]( context[ match ] );
+										// 如果json中的设置属性jq有这个方法，就调用jq的方法，比如{html:'asdads'}
+										// 就会调用$().html()进行设置
+									} else {
+										this.attr( match, context[ match ] );
+										// 如果json中没有这个方法就用attr进行设置
+									}
+						}
+								}
 						}else{
 							//进的是$("#div")id这样的形式
 						}
