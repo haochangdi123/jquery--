@@ -7,11 +7,11 @@
 <body>
 <script type="text/javascript">
 		// (96  , 283)
-	jQuery.fn = jQuery.prototype ={//添加实例属性和方法
-		1.jquery:core_version
+jQuery.fn = jQuery.prototype ={//添加实例属性和方法
+1.jquery:core_version
 			// 版本,来自于上面定义的变量core_version，可以用jQuery().jquery获取  
 
-		2.constructor: jQuery,
+2.constructor: jQuery,
 			// 对constructor指向的修正
 			// 一般情况下：
 			// 	function Person(){}
@@ -34,18 +34,24 @@
 			// 这是因为Person.prototype.name = "hcd";这样的方法是向原型对象中添加属性和方法；
 			// 而Person.prototype={}是对原型对象的覆盖;切断了她和构造函数的关系;我们可以Person.prototype={constructor:Person}这样讲原型对象和构造函数联系起来
 
-		3.init函数(101行)
-		// 初始化和参数管理
-		// 参数例如下面的
-		// $("li","ul"),selector为li表示所有的li,context为ul表示上下文的环境，表示ul下面的li
-		// (105行)表示当输入的selector为null,undefined等无法在DOM中找到时,就会return.
-		// (110行)表示表示当输入为String时，例如$("li"),创建标签$("<div>asd</div>"),$("#div")等时运行
-		// (177行)selector为直接对元素进行处理,例如$(this),$(document)
-		// (184行)selector为函数时,例如$(function(){})
-		// (193行)selector为数组时
+3.init函数(101行)
+			// 初始化和参数管理
+			// 参数例如下面的
+			// $("li","ul"),selector为li表示所有的li,context为ul表示上下文的环境，表示ul下面的li，rootjQuery为根节点其实就是$(document)
+			// selector的形式可以分为:
+			// 	1.返回undefined $(""),$(null),$(undefined),$(false)
+			// 	2.传入字符窜  $("<li>"),$("<li>a</li><li>b</li>"),$("#div")
+			// 			  	  $("#div .li")，$("div"),$(".div")
+			// 	3.传入节点	  $(this)  $(document)
+			// 	4.传入函数    $(function(){})
+			// (105行)表示当输入的selector为null,undefined等无法在DOM中找到时,就会return.
+			// (110行)表示表示当输入为String时，例如$("li"),创建标签$("<div>asd</div>"),$("#div")等时运行
+			// (177行)selector为直接对元素进行处理,例如$(this),$(document)
+			// (184行)selector为函数时,例如$(function(){})
+			// (193行)selector为数组时
 
-		// 接下来对init进行详细的解释：
-		// 首先要了解的：
+			// 接下来对init进行详细的解释：
+			// 首先要了解的：
 				// $("li").css("background","red");
 				// 他其实和js中的下面的方法原理是一样的：
 				// var lia = document.getELementByTagName("li");
@@ -88,118 +94,230 @@
 				// jq.select();
 				// jq.css();
 
-		// 详解：
-		(110行)如果是字符串	
-			(111行)	if(selector.charAt(0) === "<" && selector.charAt( selector.length - 1 ) === ">" && selector.length >= 3 ){
-					// 表示以"<"开头以'>'结尾，并且长度大于等于3，其实就是在找标签
-					// 比如这样的创建标签$("<div>span</div><div>hcd</div>"),$("<li>")
+		// 详解：如果是字符串
+		(110行)if ( typeof selector === "string" ) {				
+			(111行)if(selector.charAt(0) === "<" && selector.charAt( selector.length - 1 ) === ">" && selector.length >= 3 ){
+						// 表示以"<"开头以'>'结尾，并且长度大于等于3，其实就是在找标签
+						// 比如这样的创建标签$("<div>span</div><div>hcd</div>"),$("<li>")
 
-					match = [ null, selector, null ];
-					//如果满足条件的进行如上设置，例如：
-					// match = [ null, "<div>span</div><div>hcd</div>", null ];
-					// match = [ null, "<li>", null ];
-				}else{
-					// 比如：$("li"),$("#div"),$(".div span"),$("#div ul")
-					// 特别的有这种创建标签$("<div>hcd")(这样的以创建div但是是显示不出hcd的，也就是说创建的是没有内容的div)
+						match = [ null, selector, null ];
+						//如果满足条件的进行如上设置，例如：
+						// match = [ null, "<div>span</div><div>hcd</div>", null ];
+						// match = [ null, "<li>", null ];
+			(115行)}else{
+						// 比如：$("li"),$("#div"),$(".div span"),$("#div ul")
+						// 特别的有这种创建标签$("<div>hcd")(这样的以创建div但是是显示不出hcd的，也就是说创建的是没有内容的div)
 
-					match = rquickExpr.exec( selector );
-					//走else的将会进行如上的设置
-					// rquickExpr(75行)为在jq初始定义的正则表达式，表示删选含有单标签或者id的元素
-					// exec为正则的方法
-					// 例如：
-					// match = null;//$("li"),$(".div span"),$("#div ul")
-					// match = [ "#div",null,"div"];//$("#div")
-					// match = [ "<div>hcd","<div>",null];//$("<div>hcd"),这也是为何$("<div>hcd")会产生一个空的div，因为[]中间只有标签
-				}
+						match = rquickExpr.exec( selector );
+						//走else的将会进行如上的设置
+						// rquickExpr(75行)为在jq初始定义的正则表达式，表示删选含有单标签或者id的元素
+						// exec为正则的方法
+						// 例如：
+						// match = null;//$("li"),$(".div span"),$("#div ul")
+						// match = [ "#div",null,"div"];//$("#div")
+						// match = [ "<div>hcd","<div>",null];//$("<div>hcd"),这也是为何$("<div>hcd")会产生一个空的div，因为[]中间只有标签
+			(117行)}
 
 			(120行)if ( match && (match[1] || !context) ){
-				//match不为null,并且,match数组第二个不是null,或者不含有上下文(#div这样的取ID的一般都是不会含有上下文的)
-				// 能进入的是创建标签$("<li>")和$("#div")这样的
-				 (123行)if ( match[1] ) {
+						//match不为null,并且,match数组第二个不是null,或者不含有上下文(#div这样的取ID的一般都是不会含有上下文的)
+						// 能进入的是创建标签$("<li>")和$("#div")这样的
+				    (123行)if ( match[1] ) {
 							// 如果match数组第二个元素不是null，其实也就是创建标签$("<li>")
-
 							(124行)context = context instanceof jQuery ? context[0] : context;
 								// 创建标签的时候可以传第二个参数，表示上下文的环境;(h很少用)如果为document直接取，但是如果是$(document)这样的用context[0]转化为原生的。
 								// 例如：$("<li>",document)但是注意，只能传document不能传ul等这样的，一般用于页面上有iframe的时候，那页面上就会有两个window;
 								//     $("<li>",contentWindow.document)来创建iframe的document下的li
-
 							(127行)jQuery.merge( this, jQuery.parseHTML(
 									match[1],
 									context && context.nodeType ? context.ownerDocument || context : document,
 									true
 								   ));
-								// 1.$("ul").appen($("<li>1</li><li>2</li><li>3</li>"))
-									// 我们由首先要了解到的找到，其实他要变成
-									// this={
-									// 	0:'li',
-									// 	1:'l1',
-									// 	2:'li',
-									// 	length:3
-									// }
-									// 这样的形式后再用原生js的方法遍历插入到ul中
-								// 2.jQuery.parseHTML()方法的简介：参数1：string，2：上下执行环境，3.是否识别script标签(默认为false)
-									// 例如：
-									// 	var string = "<li>1</li><li>2</li><li>3</li><script>alert(2)<\/script>"
-									// 	(注意为了防止script的错误识别,使用了转译的/);
-									// 	var arr = jQuery.parseHTML(string,document,true);
-									// 	//['li','li','li']每一个元素为数组的元素
-									// 	$.each(arr,function(i){
-									// 		$("ul").append(a[i]);
-									// 	})
-									// 	//这样ul上就会多3个li了，并且会弹4.
-								// 3.jQuery.merge方法
-									//  	合并数组
-									//   例如：var a1 = ['a'];
-									//   		var a2 = ['b'];
-									//   		var b = jQuery.merge(a1,a2)//['a','b']
-									//    但是在jq的内部总着合并数组和json的特殊作用：
-									//    例如：var c1={
-									//    			  0:'a',
-									//    			  1:'b',
-									//    			  length:2
-									//    			}
-									//    		 var c2 = ['c'];
-									//    		 var d = jQuery.merge(c1,c2);
-									//    		 //结果为d={
-									//    		 	   0:'a',
-									//    			   1:'b',
-									//    			   2:'c',
-									//    			  length:3
-									//    		 }
-								// 所以利用jQuery.parseHTML和jQuery.merge我们可以的到我们想要的this的json形式
-
+									// 1.$("ul").appen($("<li>1</li><li>2</li><li>3</li>"))
+										// 我们由首先要了解到的找到，其实他要变成
+										// this={
+										// 	0:'li',
+										// 	1:'l1',
+										// 	2:'li',
+										// 	length:3
+										// }
+										// 这样的形式后再用原生js的方法遍历插入到ul中
+									// 2.jQuery.parseHTML()方法的简介：参数1：string，2：上下执行环境，3.是否识别script标签(默认为false)
+										// 例如：
+										// 	var string = "<li>1</li><li>2</li><li>3</li><script>alert(2)<\/script>"
+										// 	(注意为了防止script的错误识别,使用了转译的/);
+										// 	var arr = jQuery.parseHTML(string,document,true);
+										// 	//['li','li','li']每一个元素为数组的元素
+										// 	$.each(arr,function(i){
+										// 		$("ul").append(a[i]);
+										// 	})
+										// 	//这样ul上就会多3个li了，并且会弹4.
+									// 3.jQuery.merge方法
+										//  	合并数组
+										//   例如：var a1 = ['a'];
+										//   		var a2 = ['b'];
+										//   		var b = jQuery.merge(a1,a2)//['a','b']
+										//    但是在jq的内部总着合并数组和json的特殊作用：
+										//    例如：var c1={
+										//    			  0:'a',
+										//    			  1:'b',
+										//    			  length:2
+										//    			}
+										//    		 var c2 = ['c'];
+										//    		 var d = jQuery.merge(c1,c2);
+										//    		 //结果为d={
+										//    		 	   0:'a',
+										//    			   1:'b',
+										//    			   2:'c',
+										//    			  length:3
+										//    		 }
+									// 所以利用jQuery.parseHTML和jQuery.merge我们可以的到我们想要的this的json形式
 							(134行)if ( rsingleTag.test( match[1] ) && jQuery.isPlainObject( context ) ) {
-									// 1.rsingleTag为筛选单标签的正则,test为正则的删选方法.
-									// 例如:<li>或者<li></li>就是说不能有内容
-									// 2.jQuery.isPlainObject( context )是说为json的形式
-									// 例如:
-									// $("<li></li>",{title:'hi',html:'asdads'}).appendTo('ul'); 
+										// 1.rsingleTag为筛选单标签的正则,test为正则的删选方法.
+										// 例如:<li>或者<li></li>就是说不能有内容
+										// 2.jQuery.isPlainObject( context )是说为json的形式
+										// 例如:
+										// $("<li></li>",{title:'hi',html:'asdads'}).appendTo('ul'); 
 									(135行)for ( match in context ) {
-										// for-in循环遍历传入参数json的属性(json的属性只能用for-in遍历)
-									if ( jQuery.isFunction( this[ match ] ) ) {
-										this[ match ]( context[ match ] );
-										// 如果json中的设置属性jq有这个方法，就调用jq的方法，比如{html:'asdads'}
-										// 就会调用$().html()进行设置
-									} else {
-										this.attr( match, context[ match ] );
-										// 如果json中没有这个方法就用attr进行设置
-									}
-						}
-								}
-						}else{
-							//进的是$("#div")id这样的形式
-						}
-				}
+											// for-in循环遍历传入参数json的属性(json的属性只能用for-in遍历)
+											(137行)if ( jQuery.isFunction( this[ match ] ) ) {
+												this[ match ]( context[ match ] );
+													// 如果json中的设置属性jq有这个方法，就调用jq的方法，比如{html:'asdads'}
+													// 就会调用$().html()进行设置
+											(141行)} else {
+												this.attr( match, context[ match ] );
+													// 如果json中没有这个方法就用attr进行设置
+											(143行)}
+									(144行)}
+							(145行)}
+							(147行)return this;
+							(150行)}else{(对应123行if)
+										//进的是$("#div")id这样的形式
+										(151行)elem = document.getElementById( match[2] );
+											// 根据115行讲的 match = [ "#div",null,"div"];//$("#div")
+											// 所以是通过js原生的方法获取该id的元素
+										(151行)if ( elem && elem.parentNode ) {
+											//如果通过id获取到了元素，并且该元素在页面上是有父级的(因为黑莓是id不存在也可以找到的，所以要确定他有父级)
+											(157行)this.length = 1;
+											(157行)this[0] = elem;
+												// 将查找的元素存在this的json形式中
+										(159行(对151))}
+										(161行)this.context = document;
+											// 一般id都是通过document进行查找的，所以上下文环境为document
+										(162行)this.selector = selector;
+										(163行)return this;
+							(164行)}
+			(167行(对应头部120))}else if ( !context || context.jquery ) {
+									//以上的来选择$("ul li.hcd")这样的或者$("ul",$(document)).find('li')
+									// 如果没有上下文环境，或者上下文环境是jq对象直接进入
+									(168行)return ( context || rootjQuery ).find( selector );
+										//将返回$(document).find()或$对象.find()
+										// 如果是$("ul li.hcd")就返回$(document).find("ul li.hcd")也就是$("ul",$(document)).find('li')这样的形式
+				  (172行(对167))}else{
+				  					return this.constructor( context ).find( selector );
+					  					// 由100行我们知道constructor=jQuery;
+					  					// 所以else走的是例如：$("ul",document).find('li')就会返回
+					  					// $("ul",$(document)).find('li')这样的形式
+				  				}
+		(177行(对应头部110))}else if(selector.nodeType){
+				//选择节点的方式 如果传入的是类似入$(this),$(document)这样的,如果是节点类型就一定会有nodeType
+				this.context = this[0] = selector;
+							//节点没有父级节点等类似的，所以上下文就是其本身
+				this.length = 1;
+				return this;
+		(184行(对应17))}else if(jQuery.isFunction( selector )){
+				//处理传入函数的形式，以为当文档加载完毕后调用
+			return rootjQuery.ready( selector );
+					// 有两种处理函数的方式$(function(){})和jQuery(document).ready(function(){});我们有源码知道其实第一中也是return为了第二种
+		(186行(对应184))}
+		(188行)if ( selector.selector !== undefined ) {
+				//如果有人写写成$($('div'))这样的形式
+				this.selector = selector.selector;
+				this.context = selector.context;
+					// 将$($('div'))-->$('div')
+		(191行(对应186))}
+		(193行)return jQuery.makeArray( selector, this );
+			//$.makeArray直接使用是返回数组，第二个参数是可以设定返回的形式，这里的this就是json形式的
+			//例如 var li = document.getElementsByTagName("li");//假设有3个li
+	  		//console.log($.makeArray(li))//[li,li,li]
+	  		//console.log($.makeArray(li,{length:0}))//Object {0: li, 1: li, 2: li, length: 3}
 
-		
+
+
+4.toArray函数(202行)
+		// 转化为数组的方法
+
+5.get函数(208)
+		// 转原生集合
+		function( num ) {
+		return num == null ?this.toArray() :( num < 0 ? this[ this.length + num ] : this[ num ] );
+		}
+			// 代码的意思是如果不传参数,那就调用toArray的方法,返回数组,如果参数为负数,则倒着数,
+			// this={
+			// 	0:'li',
+			// 	1:'li',
+			// 	length:2
+			// }这样的json形式,所以可以用 this[ num ]来获取
+			// 例如  <li>111111</li>
+			// 	  <li>111111</li>
+			// 	  <li>111111</li> 
+			// 	 console.log($("li").get())//[li,li,li]
+			// 	 $("li").get(0).innerHTML="ppp"//注意get后的为原生的，要用原生的方法
+
+6.pushStack函数(220)
+		// jq对象的入栈处理
+		栈：先进后出，后进先出
+		function( elems ) {
+			var ret = jQuery.merge( this.constructor(), elems );
+			ret.prevObject = this;
+			ret.context = this.context;
+			return ret;
+		},
+			// 传入的参数和jQuery结合为json的形式,并将参数的prevObject属性赋值为this(this为调用该方法的对象,以下面的方法为例为$('div'))
+			// 例如：
+			// <div>asdasd</div>
+			// <span>poiuy</span>
+			// $("div").pushStack($("span")).css("background","red");
+			// span会变红,因为根据栈的原理,span是后进的所以先出,css也就加在了span身上
+			// $("div").pushStack($("span")).css("background","red").end().css("background","yellow");
+			// 利用end方法可以找到栈的下一层也就是div，所以上面的代码就是div是黄色,span是红色
+			// (end()方法其实就是找到$("span")的prevObject的属性值)
+			// (在slice方法中也用到了pushStack函数，例如$("div").slice(0,1).css("background","red");其实先入栈$("div"),再入栈$("div")中的第0个，所以样式加在了后者，如果用end方法就可以加给$("div"))
+
+7.each函数(236)
+		// 加强版的for循环
+
+8.ready函数(240行)
+		// DOM加载的接口
+
+9.slice函数(247)
+		// 集合的截取
+		// 调的pushStack函数
+
+10.first函数(251)
+		// 集合的第一项
+		// 调的eq方法
+
+11.last函数(255)
+		// 集合的最后一项
+		// 调的eq方法
+
+12.eq函数(259)
+		// 集合的指定项
+		function( i ) {     
+			var len = this.length,   
+				j = +i + ( i < 0 ? len : 0 );   
+			return this.pushStack( j >= 0 && j < len ? [ this[j] ] : [] );
+		}
+		// 传入的参数是可以为负数的,j = length+i;使得j为从前向后数的位置
+		// 如果i为正数，j=i；
+		// 然后如果j在合理的范围内就利用pushStack函数将就位置的元素放入栈中，因为后放入先出，所以操作加在该元素上
+
+13.map函数(265)
 
 
 
 
 
-
-
-	}
 
 
 
