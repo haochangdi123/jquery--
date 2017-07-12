@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script type="text/javascript">
+		jQuery.extend = jQuery.fn.extend
+		// jQuery.extend为扩展$的静态方法,fn=prototype;所以jQuery.fn.extend为扩展$的实例方法
+		用法：
+			1.当只写一个对象的时候,为扩展jq的插件的形式
+				$.extend({
+					a:function(){
+						alert(1);
+					},
+					b:function(){
+						alert(2)
+					}
+				});
+				$.a()//1
+				$.b()//2
+				这样的称之为扩展工具方法。
+				$.extend();这时的this就是$;在this下面添加了A和B方法,所以this.a可以用$.a来调用
+				$.extend()--->this---->$--->this.a--->$.a
+
+				jQuery.fn.extend({
+					a:function(){
+						alert(3);
+					},
+					b:function(){
+						alert(4)
+					}
+				})
+				$().a();
+				$().b();
+				这样的称之为扩展实例方法。
+				jQuery.fn.extend()其实就是jQuery.prototype.extend(),this也就是jQuery.prototype了,在this下面添加了A和B方法,其实也就是在原型中添加了A和B,要想调用A和B方法,需创建实例对象，对象继承原型的方法和属性，进而调用A和B方法,所以用$().a()
+				jQuery.fn.extend()--->this--->jQuery.fn--->this.a--->jQuery.fn.a--->$().a
+
+
+			2.当写多个对象的时候,后面的对象都扩展到第一个对象身上
+				var a = {};
+				$.extend(a,{name:"hello"},{age:230});
+				console.log(a)//Object {name: "hello", age: 230}
+
+				浅拷贝和深拷贝
+				浅拷贝：只是复制指针，指向的是同一个内存
+				深拷贝：复制指针，并且复制内存，指向的就是不同的内存了
+
+	</script>
+</body>
+</html>

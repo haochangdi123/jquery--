@@ -313,6 +313,18 @@ jQuery.fn = jQuery.prototype ={//添加实例属性和方法
 		// 然后如果j在合理的范围内就利用pushStack函数将就位置的元素放入栈中，因为后放入先出，所以操作加在该元素上
 
 13.map函数(265)
+	//对数组的重新的编辑
+	在map函数中又调用了工具方法$.map()(工具方法就是元生的js的方法,$().map()这样的是实例方法);
+	例如：
+		// var arr = ['a','b'];
+		// var a = $.map(arr,function(ele,index){
+		// 	return ele+index;
+		// });
+		// console.log(a)//['a0','b1']
+
+14.end函数(271)
+	//利用end方法可以找到栈的下一层
+
 
 
 

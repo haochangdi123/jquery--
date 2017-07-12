@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<script type="text/javascript">
+		jQuery.extend = jQuery.fn.extend
+		// jQuery.extend为扩展$的静态方法,fn=prototype;所以jQuery.fn.extend为扩展$的实例方法
+		用法：
+			1.当只写一个对象的时候,为扩展jq的插件的形式
+				$.extend({
+					a:function(){
+						alert(1);
+					},
+					b:function(){
+						alert(2)
+					}
+				});
+				$.a()//1
+				$.b()//2
+				这样的称之为扩展工具方法。
+				$.extend();这时的this就是$;在this下面添加了A和B方法,所以this.a可以用$.a来调用
+				$.extend()--->this---->$--->this.a--->$.a
+
+				jQuery.fn.extend({
+					a:function(){
+						alert(3);
+					},
+					b:function(){
+						alert(4)
+					}
+				})
+				$().a();
+				$().b();
+				这样的称之为扩展实例方法。
+				jQuery.fn.extend()其实就是jQuery.prototype.extend(),this也就是jQuery.prototype了,在this下面添加了A和B方法,其实也就是在原型中添加了A和B,要想调用A和B方法,需创建实例对象，对象继承原型的方法和属性，进而调用A和B方法,所以用$().a()
+				jQuery.fn.extend()--->this--->jQuery.fn--->this.a--->jQuery.fn.a--->$().a
+
+
+			2.当写多个对象的时候,后面的对象都扩展到第一个对象身上
+				var a = {};
+				$.extend(a,{name:"hello"},{age:230});
+				console.log(a)//Object {name: "hello", age: 230}
+				这是因为这是浅拷贝(浅拷贝和深拷贝(3中有介绍))
+				例如
+					var a = {};
+					b = {
+						name:{
+							newname:'pppp'
+						}
+					}
+					$.extend(a,b);
+					a.name.newname = "opopoasd";
+					console.log(a.name);//"opopoasd"
+					console.log(b.name);//"opopoasd"
+				其实可以在第一个位置再加一个参数，默认为false，为true就是深拷贝
+					var a = {};
+					b = {
+						name:{
+							newname:'pppp'
+						}
+					}
+					$.extend(true,a,b);
+					a.name.newname = "opopoasd";
+					console.log(a.name);//"opopoasd"
+					console.log(b.name);//"pppp"
+
+
+
+				
+				
+
+
+			3.对象的引用
+				1.基本数据类型
+						var a = 5;
+						var b = a;
+						b += 3;
+						console.log(b);
+						console.log(a);
+						赋值,互相没有影响
+
+				// 2.对象
+						1.
+						数组：
+							var a = [1,2,3];
+							var b = a;
+							b.push(6);
+							console.log(b);//[1,2,3,6];
+							console.log(a);//[1,2,3,6];
+						字面量对象：
+							var a = {
+								age:20
+							};
+							var b = a;
+							b.name = "ppp";
+							console.log(a.name);//"ppp"
+							console.log(b.name);//"ppp";
+							对象和函数都是引用的关系。
+								指针a
+						 	a --------->内存a
+						 	b引用a其实是复制a的指针,所以指针b=指针a
+								指针b
+						 	b --------->内存a
+						 	问题：由于引用，所以修改一个将导致所有的都变了。
+						 	(可以用2来解决)
+
+						2.
+						数组：
+							var a = [1,2,3];
+							var b = a;
+							b = [0,0,0];
+							console.log(b);//[0,0,0]
+							console.log(a);// [1,2,3]
+							这是因为b=a；使得b复制了a的指针,但是b = [0,0,0]对b重新的赋值，使得切断了ab的关系，b指针将指向内存中的[0,0,0]
+						字面量对象：
+							var a = {
+								age:20
+							};
+							function copy(obj){
+								var newObj = {};
+								for(var attr in obj){
+									newObj[attr] = obj[attr];
+								}
+								return newObj;
+							}
+							var b = copy(a);
+							b.age = 90
+							console.log(a.age);//20
+							console.log(b.age);//20
+							通过利用 copy函数,将a对象的所有属性进行复制，因为赋值的是属性值，所以不是引用，b=新的复制出来的newObj;和a就没有关系了
+					浅拷贝	这就是浅拷贝,所谓的浅拷贝也就是说只是复制了一层的属性，没有深层次的复制，          如果某个属性为对象，name这个属性还是引用的，例如下面的例子
+							var a = {
+								age:{
+									new:20
+								}
+							};
+							function copy(obj){
+								var newObj = {};
+								for(attr in obj){
+									newObj[attr] = obj[attr];
+								}
+								return newObj;
+							}
+							var b = copy(a);
+							b.age.new = 90
+							console.log(a.age.new);//90
+							console.log(b.age.new);//90
+							将a.age={}后,copy函数复制age属性时就变成了引用了，这样一来更改b.age.new时a也会受到影响
+							为了解决这个问题可以用深拷贝
+					深拷贝  利用递归,复制每一层的属性值(避免引用)
+							var a = {
+							age:{
+									new:20
+								}
+							};
+							function deepCopy(obj){
+								if(typeof(obj) != "object"){
+									return obj;
+								}
+								var newObj = {};
+								for(attr in obj){
+									newObj[attr] = copy(obj[attr]);
+								}
+								return newObj;
+							}
+							var b = deepCopy(a);
+							b.age.new = 90
+							console.log(a.age.new);//20
+							console.log(b.age.new);//90
+							利用递归，只要所a的属性的值是对象就一直复制下去，直到不是对象时停止。
+
+
+
+
+
+
+代码的架构：
+			jQuery.extend = jQuery.fn.extend = function(){
+				定义一些变量
+
+				if(){}  看是不是深拷贝
+
+				if(){}	看参数是否正确
+
+				if(){}  看是不是插件
+
+				for(){  可能有多个对象情况
+
+					if(){}   防止循环引用
+
+					if(){}   深拷贝
+					else if(){} 浅拷贝 
+
+				}
+			}
+
+代码详解：
+			jQuery.extend = jQuery.fn.extend = function() {
+				var options, name, src, copy, copyIsArray, clone,
+					//arguments[0]应对的是传进多个对象的情况,例如$.extend(a,{name:"hello"},{age:230});那么a就是targe
+					target = arguments[0] || {},
+					i = 1,
+					length = arguments.length,
+					//是否为深拷贝,默认为false
+					deep = false;
+
+				//如果传入的第一个参数是布尔值,也就是说true或false表示要控制深浅拷贝了,那么我们的目标函数就不是在参数的第一个而是第二个了。例如$.extend(true,a,{name:"hello"},{age:230})
+				if ( typeof target === "boolean" ) {
+					deep = target;
+					target = arguments[1] || {};
+					i = 2;
+				}
+
+				//看一下target是不是对象,也就是看a是不是对象,如果不是对象就把它变成对象
+				if ( typeof target !== "object" && !jQuery.isFunction(target) ) {
+					target = {};
+				}
+
+				// 如果length === i就意味着只有一个对象,那么就是jq插件了,这事的this就是jQuery
+				if ( length === i ) {
+					target = this;
+					--i;
+				}
+				//当有多个对象，要把后面对象的属性扩展到第一个对像上
+				for ( ; i < length; i++ ) {
+					//要确定后面的是对象，不是null，例如$.extend(true,a,{name:"hello"},null)
+					if ( (options = arguments[ i ]) != null ) {
+						// Extend the base object
+						for ( name in options ) {
+							src = target[ name ];
+							copy = options[ name ];
+
+							// Prevent never-ending loop
+							if ( target === copy ) {
+								continue;
+							}
+
+							// Recurse if we're merging plain objects or arrays
+							if ( deep && copy && ( jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)) ) ) {
+								if ( copyIsArray ) {
+									copyIsArray = false;
+									clone = src && jQuery.isArray(src) ? src : [];
+
+								} else {
+									clone = src && jQuery.isPlainObject(src) ? src : {};
+								}
+
+								// Never move original objects, clone them
+								target[ name ] = jQuery.extend( deep, clone, copy );
+
+							// Don't bring in undefined values
+							} else if ( copy !== undefined ) {
+								target[ name ] = copy;
+							}
+						}
+					}
+				}
+
+				// Return the modified object
+				return target;
+			};
+
+	</script>
+</body>
+</html>
